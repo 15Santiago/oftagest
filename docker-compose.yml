@@ -1,0 +1,38 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: oftadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: oftadb
+      MYSQL_USER: oftauser
+      MYSQL_PASSWORD: oftapass
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: oftaserver
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_USER: oftauser
+      DB_PASSWORD: oftapass
+      DB_NAME: oftadb
+      SESSION_SECRET: oftagest_secret_key_2026
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
