@@ -51,7 +51,7 @@ function verificarSesion(req, res, next) {
     }
 }
 
-//Rutas publicas
+//  RUTAS PUBLICAS 
 
 app.get('/api/verificar', (req, res) => {
     if (req.session.usuario) {
@@ -121,7 +121,41 @@ app.post('/api/logout', (req, res) => {
     res.json({ success: true });
 });
 
-//Rutas protegidas 
+//  Registro de usuarios como paccientes
+app.post('/api/registro', async (req, res) => {
+    const { nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo, contrasena } = req.body;
+
+    try {
+        // Verificar si el correo ya existe
+        const [existe] = await db.execute('SELECT id_paciente FROM pacientes WHERE correo = ?', [correo]);
+        if (existe.length > 0) {
+            return res.status(400).json({ error: 'El correo ya está registrado' });
+        }
+
+        // Verificar si el documento ya existe
+        const [existeDoc] = await db.execute('SELECT id_paciente FROM pacientes WHERE numero_documento = ?', [numero_documento]);
+        if (existeDoc.length > 0) {
+            return res.status(400).json({ error: 'El número de documento ya está registrado' });
+        }
+
+        // Encriptar contraseña
+        const hash = await bcrypt.hash(contrasena, 10);
+
+        // Insertar paciente
+        await db.execute(
+            `INSERT INTO pacientes (nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo, contrasena) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo, hash]
+        );
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error en el servidor' });
+    }
+});
+
+//  RUTAS PROTEGIDAS 
 
 // Obtener citas del dia para un doctor
 app.get('/api/citas/doctor/:id', verificarSesion, async (req, res) => {
@@ -188,7 +222,6 @@ app.get('/api/citas', verificarSesion, async (req, res) => {
 app.post('/api/citas', verificarSesion, async (req, res) => {
     const { id_paciente, id_doctor, fecha_hora, motivo } = req.body;
     try {
-        // Verificar conflicto de horario
         const [conflict] = await db.execute(
             'SELECT * FROM citas WHERE id_doctor = ? AND fecha_hora = ? AND estado != "cancelada"',
             [id_doctor, fecha_hora]

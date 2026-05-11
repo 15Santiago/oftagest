@@ -1,122 +1,74 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Login } from './pages/Login'
+import { Dashboard } from './pages/Dashboard'
+import { Index } from './pages/Index'
+import { Registro } from './pages/Registro'
 import './App.css'
 
+// Componentes por rol (temporales)
+const Empleados = () => <h2>Gestión de Empleados</h2>
+const Reportes = () => <h2>Reportes</h2>
+const MiAgenda = () => <h2>Mi Agenda</h2>
+const AtenderCita = () => <h2>Atender Cita</h2>
+const GestionCitas = () => <h2>Gestión de Citas</h2>
+const BuscarPaciente = () => <h2>Buscar Paciente</h2>
+const MisCitas = () => <h2>Mis Citas</h2>
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [usuario, setUsuario] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/verificar')
+      .then(res => res.json())
+      .then(data => {
+        if (data.loggedIn) {
+          setUsuario(data.usuario)
+        }
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return <div className="loading">Cargando...</div>
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <Routes>
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login setUsuario={setUsuario} />} />
+      <Route path="/registro" element={<Registro />} />
+      
+      <Route path="/dashboard" element={
+        usuario ? <Dashboard usuario={usuario} setUsuario={setUsuario} /> : <Navigate to="/login" />
+      } />
+      <Route path="/empleados" element={
+        usuario ? <Empleados /> : <Navigate to="/login" />
+      } />
+      <Route path="/reportes" element={
+        usuario ? <Reportes /> : <Navigate to="/login" />
+      } />
+      <Route path="/mi-agenda" element={
+        usuario ? <MiAgenda /> : <Navigate to="/login" />
+      } />
+      <Route path="/atender-cita/:id" element={
+        usuario ? <AtenderCita /> : <Navigate to="/login" />
+      } />
+      <Route path="/gestion-citas" element={
+        usuario ? <GestionCitas /> : <Navigate to="/login" />
+      } />
+      <Route path="/buscar-paciente" element={
+        usuario ? <BuscarPaciente /> : <Navigate to="/login" />
+      } />
+      <Route path="/mis-citas" element={
+        usuario ? <MisCitas /> : <Navigate to="/login" />
+      } />
+      
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   )
 }
 
-export default App
+export { App }

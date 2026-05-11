@@ -56,4 +56,4 @@ CREATE TABLE IF NOT EXISTS diagnosticos (
 
 
 INSERT INTO empleados (nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo_empresa, contrasena, rol, especialidad, fecha_contratacion, activo) VALUES
-('Admin', 'Sistema', 'CC', '000000001', 'hombre', '3000000000', 'admin@oftagest.com', '$2b$10$CwTycUXWue0Thq9StjUM0uujrF0jK9T5qNt3D3Y5k5Y5k5Y5k5Y5', 'administrador', NULL, CURDATE(), 1);
+('Admin', 'Sistema', 'CC', '000000001', 'hombre', '3000000000', 'admin@oftagest.com', '$2b$10$8eqLlKQSCdDQ1cw7e/tATub2gtqwDBbZ5Lm3cNJlSOTf/LUupgZNq', 'administrador', NULL, CURDATE(), 1);
