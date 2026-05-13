@@ -4,11 +4,11 @@ import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { Index } from './pages/Index'
 import { Registro } from './pages/Registro'
+import { Empleados } from './pages/Empleados'
+import { Reportes } from './pages/Reportes'
 import './App.css'
 
 // Componentes por rol (temporales)
-const Empleados = () => <h2>Gestión de Empleados</h2>
-const Reportes = () => <h2>Reportes</h2>
 const MiAgenda = () => <h2>Mi Agenda</h2>
 const AtenderCita = () => <h2>Atender Cita</h2>
 const GestionCitas = () => <h2>Gestión de Citas</h2>

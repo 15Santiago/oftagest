@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS empleados (
     especialidad ENUM('oftalmólogo', 'cirujano oftalmológico', 'optometrista', 'retinólogo') NULL,
     fecha_contratacion DATE NOT NULL,
     activo BOOLEAN DEFAULT TRUE
-);
+);  
 
 CREATE TABLE IF NOT EXISTS pacientes (
     id_paciente INT PRIMARY KEY AUTO_INCREMENT,
@@ -53,7 +53,6 @@ CREATE TABLE IF NOT EXISTS diagnosticos (
     FOREIGN KEY (id_cita) REFERENCES citas(id_cita),
     FOREIGN KEY (id_doctor) REFERENCES empleados(id_empleado)
 );
-
 
 INSERT INTO empleados (nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo_empresa, contrasena, rol, especialidad, fecha_contratacion, activo) VALUES
 ('Admin', 'Sistema', 'CC', '000000001', 'hombre', '3000000000', 'admin@oftagest.com', '$2b$10$8eqLlKQSCdDQ1cw7e/tATub2gtqwDBbZ5Lm3cNJlSOTf/LUupgZNq', 'administrador', NULL, CURDATE(), 1);

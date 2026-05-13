@@ -1,8 +1,16 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './Dashboard.css'
 
 function Dashboard({ usuario, setUsuario }) {
   const navigate = useNavigate()
+  const [editando, setEditando] = useState(false)
+  const [formData, setFormData] = useState({
+    nombre: usuario?.nombre || '',
+    apellidos: usuario?.apellidos || '',
+    telefono: usuario?.telefono || '',
+    correo: usuario?.correo || ''
+  })
 
   const handleLogout = async () => {
     await fetch('/api/logout', { method: 'POST' })
@@ -17,80 +25,175 @@ function Dashboard({ usuario, setUsuario }) {
 
   const rol = usuario.rol
 
-  const menuItems = {
-    administrador: [
-      { name: 'Administrar Usuarios', path: '/empleados', icon: '👥' },
-      { name: 'Ver Reportes', path: '/reportes', icon: '📊' }
-    ],
-    doctor: [
-      { name: 'Mi Agenda', path: '/mi-agenda', icon: '📅' }
-    ],
-    trabajador: [
-      { name: 'Buscar Paciente', path: '/buscar-paciente', icon: '🔍' },
-      { name: 'Gestionar Citas', path: '/gestion-citas', icon: '📋' }
-    ],
-    paciente: [
-      { name: 'Mis Citas', path: '/mis-citas', icon: '📅' }
-    ]
+  const handleEditChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
   }
 
-  const items = menuItems[usuario.rol] || []
+  const handleSaveProfile = async () => {
+    try {
+      const res = await fetch('/api/perfil', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: usuario.id,
+          tipo: usuario.tipo,
+          nombre: formData.nombre,
+          apellidos: formData.apellidos,
+          telefono: formData.telefono,
+          correo: formData.correo
+        })
+      })
+      const data = await res.json()
+      if (data.success) {
+        setUsuario({ ...usuario, ...formData })
+        setEditando(false)
+      } else {
+        alert('Error al actualizar perfil')
+      }
+    } catch (error) {
+      alert('Error de conexión')
+    }
+  }
+
+  const rolNombre = {
+    administrador: 'Administrador',
+    doctor: 'Médico',
+    trabajador: 'Administrativo',
+    paciente: 'Paciente'
+  }
 
   return (
     <div className="dashboard-container">
-      <aside className="sidebar">
-        <div className="sidebar-header">
+      <header className="dashboard-header">
+        <div className="logo">
           <i className="fas fa-eye"></i>
-          <h2>OftaGest</h2>
+          <h1>OftaGest</h1>
         </div>
-        
-        <div className="profile-section">
+        <button onClick={handleLogout} className="logout-btn-header">
+          <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </button>
+      </header>
+
+      <main className="dashboard-main">
+        <div className="profile-card">
           <div className="profile-avatar">
             <i className="fas fa-user-circle"></i>
           </div>
           <div className="profile-info">
-            <p className="profile-name">{usuario.nombre} {usuario.apellidos}</p>
-            <p className="profile-email">{usuario.correo}</p>
-            <p className="profile-rol">{usuario.rol === 'administrador' ? 'Administrador' : usuario.rol === 'doctor' ? 'Médico' : usuario.rol === 'trabajador' ? 'Administrativo' : 'Paciente'}</p>
+            {!editando ? (
+              <>
+                <h2>{usuario.nombre} {usuario.apellidos}</h2>
+                <p><i className="fas fa-envelope"></i> {usuario.correo}</p>
+                <p><i className="fas fa-phone"></i> {usuario.telefono || 'No registrado'}</p>
+                <p><i className="fas fa-tag"></i> {rolNombre[usuario.rol] || usuario.rol}</p>
+                <button onClick={() => setEditando(true)} className="btn-edit">
+                  <i className="fas fa-edit"></i> Editar Perfil
+                </button>
+              </>
+            ) : (
+              <div className="edit-form">
+                <h3>Editar Perfil</h3>
+                <div className="form-group">
+                  <label>Nombre</label>
+                  <input
+                    type="text"
+                    name="nombre"
+                    value={formData.nombre}
+                    onChange={handleEditChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Apellidos</label>
+                  <input
+                    type="text"
+                    name="apellidos"
+                    value={formData.apellidos}
+                    onChange={handleEditChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Teléfono</label>
+                  <input
+                    type="tel"
+                    name="telefono"
+                    value={formData.telefono}
+                    onChange={handleEditChange}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Correo</label>
+                  <input
+                    type="email"
+                    name="correo"
+                    value={formData.correo}
+                    onChange={handleEditChange}
+                    disabled={usuario.tipo === 'empleado'}
+                  />
+                </div>
+                <div className="edit-buttons">
+                  <button onClick={handleSaveProfile} className="btn-save">
+                    <i className="fas fa-save"></i> Guardar
+                  </button>
+                  <button onClick={() => setEditando(false)} className="btn-cancel">
+                    <i className="fas fa-times"></i> Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        <nav className="sidebar-nav">
-          {items.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className="nav-item"
-            >
-              <span className="nav-icon">{item.icon}</span>
-              {item.name}
-            </button>
-          ))}
-        </nav>
-
-        <button onClick={handleLogout} className="logout-btn">
-          <i className="fas fa-sign-out-alt"></i> Cerrar Sesión
-        </button>
-      </aside>
-
-      <main className="dashboard-main">
-        <div className="welcome-card">
-          <h1>Bienvenido, {usuario.nombre}</h1>
-          <p>Panel de control de OftaGest</p>
-        </div>
-
         {rol === 'administrador' && (
-          <div className="quick-actions">
-            <h3>Acciones Rápidas</h3>
-            <div className="actions-grid">
-              <div className="action-card" onClick={() => navigate('/empleados')}>
-                <i className="fas fa-users"></i>
-                <span>Gestionar Usuarios</span>
-              </div>
-              <div className="action-card" onClick={() => navigate('/reportes')}>
-                <i className="fas fa-chart-bar"></i>
-                <span>Ver Reportes</span>
-              </div>
+          <div className="actions-grid">
+            <div className="action-card" onClick={() => navigate('/empleados')}>
+              <i className="fas fa-users"></i>
+              <span>Gestionar Personal</span>
+            </div>
+            <div className="action-card" onClick={() => navigate('/reportes')}>
+              <i className="fas fa-chart-bar"></i>
+              <span>Ver Reportes</span>
+            </div>
+          </div>
+        )}
+
+        {rol === 'doctor' && (
+          <div className="actions-grid">
+            <div className="action-card" onClick={() => navigate('/mi-agenda')}>
+              <i className="fas fa-calendar-alt"></i>
+              <span>Mi Agenda</span>
+            </div>
+            <div className="action-card" onClick={() => navigate('/atender-cita')}>
+              <i className="fas fa-stethoscope"></i>
+              <span>Atender Cita</span>
+            </div>
+          </div>
+        )}
+
+        {rol === 'trabajador' && (
+          <div className="actions-grid">
+            <div className="action-card" onClick={() => navigate('/buscar-paciente')}>
+              <i className="fas fa-search"></i>
+              <span>Buscar Paciente</span>
+            </div>
+            <div className="action-card" onClick={() => navigate('/gestion-citas')}>
+              <i className="fas fa-calendar-check"></i>
+              <span>Gestionar Citas</span>
+            </div>
+          </div>
+        )}
+
+        {rol === 'paciente' && (
+          <div className="actions-grid">
+            <div className="action-card" onClick={() => navigate('/mis-citas')}>
+              <i className="fas fa-calendar-alt"></i>
+              <span>Mis Citas</span>
+            </div>
+            <div className="action-card" onClick={() => navigate('/solicitar-historia')}>
+              <i className="fas fa-folder-medical"></i>
+              <span>Solicitar Historia</span>
             </div>
           </div>
         )}

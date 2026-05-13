@@ -9,7 +9,7 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+//  MIDDLEWARE 
 app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
@@ -29,8 +29,16 @@ app.use(session({
     }
 }));
 
-// Conexion a BD
 let db;
+
+//Funciones auxiliares 
+function verificarSesion(req, res, next) {
+    if (req.session.usuario) {
+        next();
+    } else {
+        res.status(401).json({ error: 'No autorizado' });
+    }
+}
 
 async function initDB() {
     db = await mysql.createConnection({
@@ -42,16 +50,7 @@ async function initDB() {
     console.log('Base de datos conectada');
 }
 
-// Middleware para verificar sesion
-function verificarSesion(req, res, next) {
-    if (req.session.usuario) {
-        next();
-    } else {
-        res.status(401).json({ error: 'No autorizado' });
-    }
-}
-
-//  RUTAS PUBLICAS 
+//Rutas públicas 
 
 app.get('/api/verificar', (req, res) => {
     if (req.session.usuario) {
@@ -81,7 +80,8 @@ app.post('/api/login', async (req, res) => {
                     apellidos: empleado.apellidos,
                     correo: empleado.correo_empresa,
                     rol: empleado.rol,
-                    tipo: 'empleado'
+                    tipo: 'empleado',
+                    telefono: empleado.telefono || ''
                 };
                 return res.json({ success: true, usuario: req.session.usuario });
             }
@@ -102,7 +102,8 @@ app.post('/api/login', async (req, res) => {
                     apellidos: paciente.apellidos,
                     correo: paciente.correo,
                     rol: 'paciente',
-                    tipo: 'paciente'
+                    tipo: 'paciente',
+                    telefono: paciente.telefono || ''
                 };
                 return res.json({ success: true, usuario: req.session.usuario });
             }
@@ -121,27 +122,23 @@ app.post('/api/logout', (req, res) => {
     res.json({ success: true });
 });
 
-//  Registro de usuarios como paccientes
+// Registro de pacientes
 app.post('/api/registro', async (req, res) => {
     const { nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo, contrasena } = req.body;
 
     try {
-        // Verificar si el correo ya existe
         const [existe] = await db.execute('SELECT id_paciente FROM pacientes WHERE correo = ?', [correo]);
         if (existe.length > 0) {
             return res.status(400).json({ error: 'El correo ya está registrado' });
         }
 
-        // Verificar si el documento ya existe
         const [existeDoc] = await db.execute('SELECT id_paciente FROM pacientes WHERE numero_documento = ?', [numero_documento]);
         if (existeDoc.length > 0) {
             return res.status(400).json({ error: 'El número de documento ya está registrado' });
         }
 
-        // Encriptar contraseña
         const hash = await bcrypt.hash(contrasena, 10);
 
-        // Insertar paciente
         await db.execute(
             `INSERT INTO pacientes (nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo, contrasena) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -155,7 +152,189 @@ app.post('/api/registro', async (req, res) => {
     }
 });
 
-//  RUTAS PROTEGIDAS 
+//  Rutas protegidas 
+
+// Editar perfil de usuario
+app.put('/api/perfil', verificarSesion, async (req, res) => {
+    const { id, tipo, nombre, apellidos, telefono, correo } = req.body;
+
+    try {
+        if (tipo === 'empleado') {
+            await db.execute(
+                'UPDATE empleados SET nombre = ?, apellidos = ?, telefono = ? WHERE id_empleado = ?',
+                [nombre, apellidos, telefono, id]
+            );
+        } else {
+            await db.execute(
+                'UPDATE pacientes SET nombre = ?, apellidos = ?, telefono = ?, correo = ? WHERE id_paciente = ?',
+                [nombre, apellidos, telefono, correo, id]
+            );
+        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error al actualizar perfil:', error);
+        res.status(500).json({ error: 'Error al actualizar perfil' });
+    }
+});
+
+// Obtener todos los empleados
+app.get('/api/empleados', verificarSesion, async (req, res) => {
+    try {
+        const [rows] = await db.execute('SELECT * FROM empleados ORDER BY id_empleado DESC');
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Crear empleado
+app.post('/api/empleados', verificarSesion, async (req, res) => {
+    const { nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo_empresa, contrasena, rol, especialidad, fecha_contratacion } = req.body;
+    
+    try {
+        const [existe] = await db.execute('SELECT id_empleado FROM empleados WHERE correo_empresa = ?', [correo_empresa]);
+        if (existe.length > 0) {
+            return res.status(400).json({ error: 'El correo ya está registrado' });
+        }
+        
+        const [existeDoc] = await db.execute('SELECT id_empleado FROM empleados WHERE numero_documento = ?', [numero_documento]);
+        if (existeDoc.length > 0) {
+            return res.status(400).json({ error: 'El documento ya está registrado' });
+        }
+        
+        const hash = await bcrypt.hash(contrasena, 10);
+        
+        await db.execute(
+            `INSERT INTO empleados (nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo_empresa, contrasena, rol, especialidad, fecha_contratacion, activo) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+            [nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo_empresa, hash, rol, especialidad || null, fecha_contratacion]
+        );
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Actualizar empleado
+app.put('/api/empleados/:id', verificarSesion, async (req, res) => {
+    const { id } = req.params;
+    const { nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo_empresa, contrasena, rol, especialidad, fecha_contratacion } = req.body;
+    
+    try {
+        let query = `UPDATE empleados SET nombre=?, apellidos=?, tipo_documento=?, numero_documento=?, sexo=?, telefono=?, correo_empresa=?, rol=?, especialidad=?, fecha_contratacion=?`;
+        let params = [nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo_empresa, rol, especialidad || null, fecha_contratacion];
+        
+        if (contrasena) {
+            const hash = await bcrypt.hash(contrasena, 10);
+            query += `, contrasena=?`;
+            params.push(hash);
+        }
+        
+        query += ` WHERE id_empleado=?`;
+        params.push(id);
+        
+        await db.execute(query, params);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Cambiar estado del empleado
+app.patch('/api/empleados/:id/estado', verificarSesion, async (req, res) => {
+    const { id } = req.params;
+    const { activo } = req.body;
+    
+    try {
+        await db.execute('UPDATE empleados SET activo = ? WHERE id_empleado = ?', [activo, id]);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+//Reportes para dministradores
+
+// Estadísticas generales
+app.get('/api/reportes/estadisticas', verificarSesion, async (req, res) => {
+    try {
+        // Total de pacientes
+        const [totalPacientes] = await db.execute('SELECT COUNT(*) as total FROM pacientes');
+        
+        // Total de citas
+        const [totalCitas] = await db.execute('SELECT COUNT(*) as total FROM citas');
+        
+        // Citas por estado
+        const [citasPorEstado] = await db.execute('SELECT estado, COUNT(*) as total FROM citas GROUP BY estado');
+        
+        // Citas por mes (últimos 6 meses)
+        const [citasPorMes] = await db.execute(`
+            SELECT DATE_FORMAT(fecha_hora, '%Y-%m') as mes, COUNT(*) as total 
+            FROM citas 
+            WHERE fecha_hora >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+            GROUP BY DATE_FORMAT(fecha_hora, '%Y-%m')
+            ORDER BY mes DESC
+        `);
+        
+        // Doctores activos
+        const [doctoresActivos] = await db.execute('SELECT COUNT(*) as total FROM empleados WHERE rol = "doctor" AND activo = 1');
+        
+        res.json({
+            totalPacientes: totalPacientes[0].total,
+            totalCitas: totalCitas[0].total,
+            citasPorEstado,
+            citasPorMes,
+            doctoresActivos: doctoresActivos[0].total
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Listado de citas con filtros (fecha, doctor, estado)
+app.get('/api/reportes/citas', verificarSesion, async (req, res) => {
+    const { fechaInicio, fechaFin, doctorId, estado } = req.query;
+    
+    try {
+        let query = `
+            SELECT c.*, p.nombre as paciente_nombre, p.apellidos as paciente_apellidos,
+                   e.nombre as doctor_nombre, e.apellidos as doctor_apellidos
+            FROM citas c 
+            JOIN pacientes p ON c.id_paciente = p.id_paciente 
+            JOIN empleados e ON c.id_doctor = e.id_empleado
+            WHERE 1=1
+        `;
+        let params = [];
+        
+        if (fechaInicio && fechaFin) {
+            query += ` AND DATE(c.fecha_hora) BETWEEN ? AND ?`;
+            params.push(fechaInicio, fechaFin);
+        }
+        
+        if (doctorId) {
+            query += ` AND c.id_doctor = ?`;
+            params.push(doctorId);
+        }
+        
+        if (estado) {
+            query += ` AND c.estado = ?`;
+            params.push(estado);
+        }
+        
+        query += ` ORDER BY c.fecha_hora DESC`;
+        
+        const [rows] = await db.execute(query, params);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 
 // Obtener citas del dia para un doctor
 app.get('/api/citas/doctor/:id', verificarSesion, async (req, res) => {
@@ -189,7 +368,7 @@ app.post('/api/diagnostico', verificarSesion, async (req, res) => {
     }
 });
 
-// Obtener todos los doctores 
+// Obtener todos los doctores
 app.get('/api/doctores', verificarSesion, async (req, res) => {
     try {
         const [rows] = await db.execute(
@@ -201,7 +380,7 @@ app.get('/api/doctores', verificarSesion, async (req, res) => {
     }
 });
 
-// Obtener todas las citas 
+// Obtener todas las citas
 app.get('/api/citas', verificarSesion, async (req, res) => {
     try {
         const [rows] = await db.execute(
@@ -278,7 +457,7 @@ app.get('/api/pacientes/buscar/:documento', verificarSesion, async (req, res) =>
     }
 });
 
-// Iniciar servidor
+//Iniciar servidor 
 initDB().then(() => {
     app.listen(process.env.PORT, () => {
         console.log(`Servidor corriendo en puerto ${process.env.PORT}`);
