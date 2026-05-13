@@ -165,10 +165,6 @@ function Dashboard({ usuario, setUsuario }) {
               <i className="fas fa-calendar-alt"></i>
               <span>Mi Agenda</span>
             </div>
-            <div className="action-card" onClick={() => navigate('/atender-cita')}>
-              <i className="fas fa-stethoscope"></i>
-              <span>Atender Cita</span>
-            </div>
           </div>
         )}
 
@@ -191,9 +187,21 @@ function Dashboard({ usuario, setUsuario }) {
               <i className="fas fa-calendar-alt"></i>
               <span>Mis Citas</span>
             </div>
+            <div className="action-card" onClick={() => navigate('/agendar-cita')}>
+              <i className="fas fa-plus-circle"></i>
+              <span>Agendar Cita</span>
+            </div>
+            <div className="action-card" onClick={() => navigate('/mis-resultados')}>
+              <i className="fas fa-flask"></i>
+              <span>Resultados</span>
+            </div>
+            <div className="action-card" onClick={() => navigate('/mis-recetas')}>
+              <i className="fas fa-prescription-bottle"></i>
+              <span>Recetas</span>
+            </div>
             <div className="action-card" onClick={() => navigate('/solicitar-historia')}>
               <i className="fas fa-folder-medical"></i>
-              <span>Solicitar Historia</span>
+              <span>Historia Clínica</span>
             </div>
           </div>
         )}

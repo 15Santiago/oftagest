@@ -183,7 +183,6 @@ function Empleados() {
         </table>
       </div>
 
-      {/* Modal para crear/editar */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

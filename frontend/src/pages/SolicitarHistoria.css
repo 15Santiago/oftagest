@@ -1,0 +1,291 @@
+.solicitar-container {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding: 20px;
+}
+
+.solicitar-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.btn-back {
+  background: #95a5a6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-back:hover {
+  background: #7f8c8d;
+}
+
+.solicitar-header h1 {
+  color: #2c3e50;
+  margin: 0;
+}
+
+.paciente-resumen {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.paciente-resumen h2 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+.info-grid p {
+  margin: 0;
+  color: #555;
+}
+
+.stats-resumen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat-item {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.stat-item i {
+  font-size: 30px;
+  color: #3498db;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.stat-item span {
+  font-size: 14px;
+  color: #555;
+}
+
+.solicitud-formulario {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.solicitud-formulario h3 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.info-solicitud {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.btn-solicitar {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+  transition: background 0.3s;
+}
+
+.btn-solicitar:hover {
+  background: #2980b9;
+}
+
+.btn-solicitar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.actividad-reciente {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.actividad-reciente h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.actividad-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.actividad-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.actividad-fecha {
+  min-width: 100px;
+  font-size: 13px;
+  color: #666;
+}
+
+.actividad-info {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.actividad-tipo {
+  font-size: 14px;
+  color: #333;
+}
+
+.actividad-estado {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.actividad-estado.agendada,
+.actividad-estado.confirmada {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.actividad-estado.completada {
+  background: #d4edda;
+  color: #155724;
+}
+
+.actividad-estado.cancelada {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Modal de confirmación */
+.confirmacion-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.confirmacion-content {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  max-width: 400px;
+  animation: fadeIn 0.3s ease;
+}
+
+.confirmacion-content i {
+  font-size: 60px;
+  color: #27ae60;
+  margin-bottom: 20px;
+}
+
+.confirmacion-content h3 {
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.confirmacion-content p {
+  color: #666;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .solicitar-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .stats-resumen {
+    grid-template-columns: 1fr;
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .actividad-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .actividad-info {
+    flex-direction: column;
+  }
+}

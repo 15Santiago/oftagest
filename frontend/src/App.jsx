@@ -6,14 +6,15 @@ import { Index } from './pages/Index'
 import { Registro } from './pages/Registro'
 import { Empleados } from './pages/Empleados'
 import { Reportes } from './pages/Reportes'
+import { MiAgenda } from './pages/MiAgenda'
+import { AtenderPaciente } from './pages/AtenderPaciente'
+import { MisCitas } from './pages/MisCitas'
+import { AgendarCita } from './pages/AgendarCita'
+import { ResultadosExamenes } from './pages/ResultadosExamenes'
+import { RecetasMedicas } from './pages/RecetasMedicas'
+import { SolicitarHistoria } from './pages/SolicitarHistoria'
 import './App.css'
 
-// Componentes por rol (temporales)
-const MiAgenda = () => <h2>Mi Agenda</h2>
-const AtenderCita = () => <h2>Atender Cita</h2>
-const GestionCitas = () => <h2>Gestión de Citas</h2>
-const BuscarPaciente = () => <h2>Buscar Paciente</h2>
-const MisCitas = () => <h2>Mis Citas</h2>
 
 function App() {
   const [usuario, setUsuario] = useState(null)
@@ -44,26 +45,42 @@ function App() {
       <Route path="/dashboard" element={
         usuario ? <Dashboard usuario={usuario} setUsuario={setUsuario} /> : <Navigate to="/login" />
       } />
+      
       <Route path="/empleados" element={
-        usuario ? <Empleados /> : <Navigate to="/login" />
+        usuario && usuario.rol === 'administrador' ? <Empleados /> : <Navigate to="/dashboard" />
       } />
       <Route path="/reportes" element={
-        usuario ? <Reportes /> : <Navigate to="/login" />
+        usuario && usuario.rol === 'administrador' ? <Reportes /> : <Navigate to="/dashboard" />
       } />
+      
       <Route path="/mi-agenda" element={
-        usuario ? <MiAgenda /> : <Navigate to="/login" />
+        usuario && usuario.rol === 'doctor' ? <MiAgenda usuario={usuario} /> : <Navigate to="/dashboard" />
       } />
-      <Route path="/atender-cita/:id" element={
-        usuario ? <AtenderCita /> : <Navigate to="/login" />
+      <Route path="/atender-paciente/:id_cita" element={
+        usuario && usuario.rol === 'doctor' ? <AtenderPaciente usuario={usuario} /> : <Navigate to="/dashboard" />
       } />
+      
       <Route path="/gestion-citas" element={
-        usuario ? <GestionCitas /> : <Navigate to="/login" />
+        usuario && usuario.rol === 'trabajador' ? <GestionCitas /> : <Navigate to="/dashboard" />
       } />
       <Route path="/buscar-paciente" element={
-        usuario ? <BuscarPaciente /> : <Navigate to="/login" />
+        usuario && usuario.rol === 'trabajador' ? <BuscarPaciente /> : <Navigate to="/dashboard" />
       } />
+      
       <Route path="/mis-citas" element={
-        usuario ? <MisCitas /> : <Navigate to="/login" />
+        usuario && usuario.rol === 'paciente' ? <MisCitas usuario={usuario} /> : <Navigate to="/dashboard" />
+      } />
+      <Route path="/agendar-cita" element={
+        usuario && usuario.rol === 'paciente' ? <AgendarCita usuario={usuario} /> : <Navigate to="/dashboard" />
+      } />
+      <Route path="/mis-resultados" element={
+        usuario && usuario.rol === 'paciente' ? <ResultadosExamenes usuario={usuario} /> : <Navigate to="/dashboard" />
+      } />
+      <Route path="/mis-recetas" element={
+        usuario && usuario.rol === 'paciente' ? <RecetasMedicas usuario={usuario} /> : <Navigate to="/dashboard" />
+      } />
+      <Route path="/solicitar-historia" element={
+        usuario && usuario.rol === 'paciente' ? <SolicitarHistoria usuario={usuario} /> : <Navigate to="/dashboard" />
       } />
       
       <Route path="*" element={<Navigate to="/" />} />

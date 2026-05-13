@@ -1,0 +1,162 @@
+.agendar-cita-container {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding: 20px;
+}
+
+.agendar-cita-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.btn-back {
+  background: #95a5a6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agendar-cita-header h1 {
+  color: #2c3e50;
+  margin: 0;
+}
+
+.agendar-form {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.fechas-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fecha-btn {
+  padding: 10px 16px;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.fecha-btn:hover {
+  background: #e9ecef;
+}
+
+.fecha-btn.selected {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.horas-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hora-btn {
+  padding: 10px 20px;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.hora-btn:hover {
+  background: #e9ecef;
+}
+
+.hora-btn.selected {
+  background: #27ae60;
+  color: white;
+  border-color: #27ae60;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.btn-agendar {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-agendar:hover {
+  background: #219a52;
+}
+
+.btn-agendar:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-cancelar {
+  background: #95a5a6;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .agendar-cita-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .form-buttons {
+    flex-direction: column;
+  }
+  
+  .fechas-grid {
+    justify-content: center;
+  }
+  
+  .horas-grid {
+    justify-content: center;
+  }
+}
