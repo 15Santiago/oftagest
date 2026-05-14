@@ -13,8 +13,9 @@ import { AgendarCita } from './pages/AgendarCita'
 import { ResultadosExamenes } from './pages/ResultadosExamenes'
 import { RecetasMedicas } from './pages/RecetasMedicas'
 import { SolicitarHistoria } from './pages/SolicitarHistoria'
+import { GestionarPaciente } from './pages/GestionarPaciente'
+import { DoctoresDia } from './pages/DoctoresDia'
 import './App.css'
-
 
 function App() {
   const [usuario, setUsuario] = useState(null)
@@ -60,11 +61,11 @@ function App() {
         usuario && usuario.rol === 'doctor' ? <AtenderPaciente usuario={usuario} /> : <Navigate to="/dashboard" />
       } />
       
-      <Route path="/gestion-citas" element={
-        usuario && usuario.rol === 'trabajador' ? <GestionCitas /> : <Navigate to="/dashboard" />
+      <Route path="/gestionar-paciente" element={
+        usuario && usuario.rol === 'trabajador' ? <GestionarPaciente usuario={usuario} /> : <Navigate to="/dashboard" />
       } />
-      <Route path="/buscar-paciente" element={
-        usuario && usuario.rol === 'trabajador' ? <BuscarPaciente /> : <Navigate to="/dashboard" />
+      <Route path="/doctores-agenda" element={
+        usuario && usuario.rol === 'trabajador' ? <DoctoresDia usuario={usuario} /> : <Navigate to="/dashboard" />
       } />
       
       <Route path="/mis-citas" element={

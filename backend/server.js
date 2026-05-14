@@ -878,6 +878,241 @@ app.get('/api/pacientes/buscar/:documento', verificarSesion, async (req, res) =>
     }
 });
 
+// ========== MODULO ADMINISTRATIVO ==========
+
+// Buscar paciente por documento
+app.get('/api/admin/buscar-paciente/:documento', verificarSesion, async (req, res) => {
+    const { documento } = req.params;
+    
+    try {
+        const [rows] = await db.execute(
+            'SELECT id_paciente, nombre, apellidos, tipo_documento, numero_documento, telefono, correo FROM pacientes WHERE numero_documento = ?',
+            [documento]
+        );
+        
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Paciente no encontrado' });
+        }
+        
+        res.json(rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Obtener doctores (para agendar)
+app.get('/api/admin/doctores', verificarSesion, async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT id_empleado, nombre, apellidos, especialidad FROM empleados WHERE rol = "doctor" AND activo = 1'
+        );
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Obtener horarios disponibles de un doctor (próximos 30 días)
+app.get('/api/admin/horarios/:doctorId', verificarSesion, async (req, res) => {
+    const { doctorId } = req.params;
+    
+    try {
+        // Obtener horarios ya ocupados
+        const [ocupados] = await db.execute(
+            `SELECT fecha_hora FROM citas 
+             WHERE id_doctor = ? AND fecha_hora >= NOW() AND estado != 'cancelada'`,
+            [doctorId]
+        );
+        
+        const horariosOcupados = ocupados.map(o => new Date(o.fecha_hora).getTime());
+        
+        // Generar horarios disponibles (9am a 6pm, cada 30 min, próximos 30 días)
+        const horariosDisponibles = [];
+        const hoy = new Date();
+        
+        for (let i = 0; i < 30; i++) {
+            const fecha = new Date(hoy);
+            fecha.setDate(hoy.getDate() + i);
+            
+            for (let hora = 9; hora <= 18; hora++) {
+                for (let minuto = 0; minuto < 60; minuto += 30) {
+                    if (hora === 18 && minuto > 0) continue;
+                    
+                    const fechaHora = new Date(fecha);
+                    fechaHora.setHours(hora, minuto, 0);
+                    
+                    if (fechaHora > hoy) {
+                        if (!horariosOcupados.includes(fechaHora.getTime())) {
+                            horariosDisponibles.push({
+                                fecha: fechaHora.toISOString().split('T')[0],
+                                hora: `${hora.toString().padStart(2,'0')}:${minuto.toString().padStart(2,'0')}`,
+                                timestamp: fechaHora.getTime()
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Agrupar por fecha
+        const agrupados = {};
+        horariosDisponibles.forEach(h => {
+            if (!agrupados[h.fecha]) {
+                agrupados[h.fecha] = [];
+            }
+            agrupados[h.fecha].push(h.hora);
+        });
+        
+        res.json(agrupados);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Agendar cita (admin)
+app.post('/api/admin/citas', verificarSesion, async (req, res) => {
+    const { id_paciente, id_doctor, fecha_hora, motivo } = req.body;
+    
+    try {
+        // Verificar conflicto
+        const [conflict] = await db.execute(
+            'SELECT * FROM citas WHERE id_doctor = ? AND fecha_hora = ? AND estado != "cancelada"',
+            [id_doctor, fecha_hora]
+        );
+        
+        if (conflict.length > 0) {
+            return res.status(400).json({ error: 'El doctor no está disponible en ese horario' });
+        }
+        
+        await db.execute(
+            `INSERT INTO citas (id_paciente, id_doctor, fecha_hora, estado, motivo) 
+             VALUES (?, ?, ?, 'agendada', ?)`,
+            [id_paciente, id_doctor, fecha_hora, motivo || null]
+        );
+        
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Obtener citas pendientes del paciente (para cancelar/reprogramar)
+app.get('/api/admin/citas-pendientes/:pacienteId', verificarSesion, async (req, res) => {
+    const { pacienteId } = req.params;
+    
+    try {
+        const [rows] = await db.execute(`
+            SELECT c.*, e.nombre as doctor_nombre, e.apellidos as doctor_apellidos,
+                   e.especialidad
+            FROM citas c
+            JOIN empleados e ON c.id_doctor = e.id_empleado
+            WHERE c.id_paciente = ? AND c.estado NOT IN ('completada', 'cancelada')
+            ORDER BY c.fecha_hora ASC
+        `, [pacienteId]);
+        
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Cancelar cita con motivo (admin)
+app.put('/api/admin/citas/:id/cancelar', verificarSesion, async (req, res) => {
+    const { id } = req.params;
+    const { motivo_cancelacion } = req.body;
+    
+    if (!motivo_cancelacion || motivo_cancelacion.trim() === '') {
+        return res.status(400).json({ error: 'El motivo de cancelación es obligatorio' });
+    }
+    
+    try {
+        await db.execute(
+            'UPDATE citas SET estado = "cancelada", motivo = CONCAT(motivo, " [CANCELADA POR ADMIN: ", ?, "]") WHERE id_cita = ?',
+            [motivo_cancelacion, id]
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Reprogramar cita
+app.put('/api/admin/citas/:id/reprogramar', verificarSesion, async (req, res) => {
+    const { id } = req.params;
+    const { nueva_fecha_hora, motivo } = req.body;
+    
+    try {
+        // Obtener la cita actual
+        const [cita] = await db.execute('SELECT id_doctor FROM citas WHERE id_cita = ?', [id]);
+        if (cita.length === 0) {
+            return res.status(404).json({ error: 'Cita no encontrada' });
+        }
+        
+        const doctorId = cita[0].id_doctor;
+        
+        // Verificar disponibilidad
+        const [conflict] = await db.execute(
+            'SELECT * FROM citas WHERE id_doctor = ? AND fecha_hora = ? AND id_cita != ? AND estado != "cancelada"',
+            [doctorId, nueva_fecha_hora, id]
+        );
+        
+        if (conflict.length > 0) {
+            return res.status(400).json({ error: 'El doctor no está disponible en ese horario' });
+        }
+        
+        await db.execute(
+            'UPDATE citas SET fecha_hora = ?, estado = "agendada", motivo = CONCAT(motivo, " [REPROGRAMADA: ", ?, "]") WHERE id_cita = ?',
+            [nueva_fecha_hora, motivo || 'Sin motivo especificado', id]
+        );
+        
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Obtener doctores 
+app.get('/api/admin/doctores-activos', verificarSesion, async (req, res) => {
+    try {
+        const [rows] = await db.execute(
+            'SELECT id_empleado, nombre, apellidos, especialidad FROM empleados WHERE rol = "doctor" AND activo = 1 ORDER BY nombre ASC'
+        );
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Obtener agenda de un doctor por rango de fechas
+app.get('/api/admin/agenda-doctor', verificarSesion, async (req, res) => {
+    const { doctorId, fechaInicio, fechaFin } = req.query;
+    
+    try {
+        let query = `
+            SELECT c.*, p.nombre as paciente_nombre, p.apellidos as paciente_apellidos,
+                   p.numero_documento, p.telefono
+            FROM citas c
+            JOIN pacientes p ON c.id_paciente = p.id_paciente
+            WHERE c.id_doctor = ?
+        `;
+        let params = [doctorId];
+        
+        if (fechaInicio && fechaFin) {
+            query += ` AND DATE(c.fecha_hora) BETWEEN ? AND ?`;
+            params.push(fechaInicio, fechaFin);
+        } else {
+            query += ` AND DATE(c.fecha_hora) = CURDATE()`;
+        }
+        
+        query += ` ORDER BY c.fecha_hora ASC`;
+        
+        const [rows] = await db.execute(query, params);
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 initDB().then(() => {
     app.listen(process.env.PORT, () => {
         console.log(`Servidor corriendo en puerto ${process.env.PORT}`);

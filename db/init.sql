@@ -54,5 +54,14 @@ CREATE TABLE IF NOT EXISTS diagnosticos (
     FOREIGN KEY (id_doctor) REFERENCES empleados(id_empleado)
 );
 
+CREATE TABLE IF NOT EXISTS solicitudes_historia (
+    id_solicitud INT PRIMARY KEY AUTO_INCREMENT,
+    id_paciente INT NOT NULL,
+    motivo TEXT NULL,
+    fecha_solicitud TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado ENUM('pendiente', 'en_proceso', 'completada') DEFAULT 'pendiente',
+    FOREIGN KEY (id_paciente) REFERENCES pacientes(id_paciente)
+);
+
 INSERT INTO empleados (nombre, apellidos, tipo_documento, numero_documento, sexo, telefono, correo_empresa, contrasena, rol, especialidad, fecha_contratacion, activo) VALUES
 ('Admin', 'Sistema', 'CC', '000000001', 'hombre', '3000000000', 'admin@oftagest.com', '$2b$10$8eqLlKQSCdDQ1cw7e/tATub2gtqwDBbZ5Lm3cNJlSOTf/LUupgZNq', 'administrador', NULL, CURDATE(), 1);

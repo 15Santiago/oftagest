@@ -170,13 +170,13 @@ function Dashboard({ usuario, setUsuario }) {
 
         {rol === 'trabajador' && (
           <div className="actions-grid">
-            <div className="action-card" onClick={() => navigate('/buscar-paciente')}>
-              <i className="fas fa-search"></i>
-              <span>Buscar Paciente</span>
+            <div className="action-card" onClick={() => navigate('/gestionar-paciente')}>
+              <i className="fas fa-user-cog"></i>
+              <span>Gestionar Paciente</span>
             </div>
-            <div className="action-card" onClick={() => navigate('/gestion-citas')}>
-              <i className="fas fa-calendar-check"></i>
-              <span>Gestionar Citas</span>
+            <div className="action-card" onClick={() => navigate('/doctores-agenda')}>
+              <i className="fas fa-calendar-alt"></i>
+              <span>Doctores y Agenda</span>
             </div>
           </div>
         )}

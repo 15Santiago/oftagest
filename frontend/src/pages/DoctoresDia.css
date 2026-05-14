@@ -1,0 +1,301 @@
+.doctores-container {
+  min-height: 100vh;
+  background: #f5f7fa;
+  padding: 20px;
+}
+
+.doctores-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.btn-back {
+  background: #95a5a6;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-back:hover {
+  background: #7f8c8d;
+}
+
+.doctores-header h1 {
+  color: #2c3e50;
+  margin: 0;
+}
+
+.doctores-lista {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.doctores-lista h3 {
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.doctores-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.doctor-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.doctor-card:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.doctor-card.active {
+  background: #e3f2fd;
+  border-color: #3498db;
+}
+
+.doctor-avatar i {
+  font-size: 40px;
+  color: #3498db;
+}
+
+.doctor-info h4 {
+  margin: 0 0 5px 0;
+  color: #2c3e50;
+}
+
+.doctor-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.agenda-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.agenda-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #eee;
+}
+
+.agenda-header h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.rango-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.rango-btn {
+  padding: 8px 20px;
+  background: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.rango-btn.active {
+  background: #3498db;
+  color: white;
+  border-color: #3498db;
+}
+
+.fechas-personalizadas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fechas-personalizadas input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.btn-aplicar {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.agenda-contenido {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.agenda-dia {
+  margin-bottom: 25px;
+}
+
+.dia-titulo {
+  background: #f8f9fa;
+  padding: 10px 15px;
+  border-radius: 8px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.citas-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cita-agenda-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.cita-hora {
+  min-width: 80px;
+  font-weight: bold;
+  color: #3498db;
+}
+
+.cita-paciente {
+  flex: 1;
+}
+
+.cita-paciente strong {
+  color: #2c3e50;
+}
+
+.cita-documento {
+  font-size: 12px;
+  color: #666;
+  margin-left: 10px;
+}
+
+.cita-telefono {
+  font-size: 12px;
+  color: #666;
+  margin-left: 10px;
+}
+
+.cita-motivo small {
+  color: #888;
+  font-size: 11px;
+}
+
+.cita-estado {
+  min-width: 100px;
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.estado-agendada, .estado-confirmada {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.estado-en_curso {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.estado-completada {
+  background: #d4edda;
+  color: #155724;
+}
+
+.estado-cancelada {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.sin-citas {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.sin-citas i {
+  font-size: 50px;
+  color: #bdc3c7;
+  margin-bottom: 15px;
+}
+
+.cargando-agenda {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.seleccionar-mensaje {
+  text-align: center;
+  padding: 60px;
+  background: white;
+  border-radius: 12px;
+  color: #666;
+}
+
+.seleccionar-mensaje i {
+  font-size: 50px;
+  color: #bdc3c7;
+  margin-bottom: 15px;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .doctores-header {
+    flex-direction: column;
+  }
+  
+  .doctores-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cita-agenda-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .fechas-personalizadas {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
